@@ -34,6 +34,7 @@ defmodule Chat do
       select: %{
         id: r.id,
         name: r.room_name,
+        type: r.room_type,
         logo_url: r.logo_url,
         last_message: fragment(
           "(SELECT body FROM messages WHERE room_id = ? ORDER BY inserted_at DESC LIMIT 1)",
@@ -41,6 +42,10 @@ defmodule Chat do
         ),
         last_message_at: fragment(
           "(SELECT inserted_at FROM messages WHERE room_id = ? ORDER BY inserted_at DESC LIMIT 1)",
+          r.id
+        ),
+        last_message_user_name: fragment(
+          "(SELECT user_name FROM messages WHERE room_id = ? ORDER BY inserted_at DESC LIMIT 1)",
           r.id
         )
       }
