@@ -8,4 +8,5 @@ config :chat, Chat.Repo,
   database: System.get_env("DB_NAME"),
   hostname: System.get_env("DB_HOST"),
   port: System.get_env("DB_PORT"),
-  pool_size: 10
+  pool_size: 10,
+  show_sensitive_data_on_connection_error: true
