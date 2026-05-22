@@ -5,6 +5,8 @@ defmodule Chat.Application do
   @impl true
   def start(_type, _args) do
 
+    :ok = run_migrations()
+
     children = [
 
       Chat.Repo,
@@ -23,6 +25,15 @@ defmodule Chat.Application do
 
     {:ok, pid}
 
+  end
+
+  defp run_migrations do
+    if Application.get_env(:chat, :run_migrations, true) do
+      IO.puts("Running migrations...")
+      {:ok, _, _} = Ecto.Migrator.with_repo(Chat.Repo, &Ecto.Migrator.run(&1, :up, all: true))
+    else
+      :ok
+    end
   end
 
   defp restore_rooms_from_db do
