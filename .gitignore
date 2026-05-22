@@ -26,3 +26,5 @@ erl_crash.dump
 chat-*.tar
 
 .elixir_ls/
+
+.env
