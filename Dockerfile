@@ -28,7 +28,8 @@ RUN apk add --no-cache \
     openssl \
     ncurses-libs \
     postgresql-client \
-    bash
+    bash \
+    libstdc++
 
 RUN addgroup -g 1000 -S chat && \
     adduser -S chat -u 1000 -G chat
