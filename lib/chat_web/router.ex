@@ -1,5 +1,4 @@
 defmodule ChatWeb.Router do
-  alias ChatWeb.RoomController
   use ChatWeb, :router
 
   pipeline :api do
