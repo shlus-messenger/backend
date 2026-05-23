@@ -21,7 +21,7 @@ defmodule ChatWeb.RoomController do
 
     messages = Chat.get_messages_by_room_id(params["room_id"], params["user_id"])
 
-    json(conn, %{messages: messages})
+    json(conn, messages)
 
   end
 
