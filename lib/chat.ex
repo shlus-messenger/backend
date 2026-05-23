@@ -20,6 +20,12 @@ defmodule Chat do
 
   end
 
+  def list_rooms do
+
+    Repo.all(Room)
+
+  end
+
   def get_all_public_rooms(amount) do
 
     query = from r in Chat.Schemas.Room,
