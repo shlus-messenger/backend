@@ -30,7 +30,8 @@ defmodule Chat.Application do
   defp run_migrations do
     if Application.get_env(:chat, :run_migrations, true) do
       IO.puts("Running migrations...")
-      {:ok, _, _} = Ecto.Migrator.with_repo(Chat.Repo, &Ecto.Migrator.run(&1, :up, all: true))
+      _ = Ecto.Migrator.with_repo(Chat.Repo, &Ecto.Migrator.run(&1, :up, all: true))
+      :ok
     else
       :ok
     end
