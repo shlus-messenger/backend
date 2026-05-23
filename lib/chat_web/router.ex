@@ -1,4 +1,5 @@
 defmodule ChatWeb.Router do
+  alias ChatWeb.RoomController
   use ChatWeb, :router
 
   pipeline :api do
@@ -9,6 +10,13 @@ defmodule ChatWeb.Router do
     pipe_through :api
 
     get "/rooms/:user_id", RoomController, :get_rooms_by_user_id
+  end
+
+  scope "/api", ChatWeb do
+    pipe_through :api
+
+    get "/rooms", RoomController, :get_all_public_rooms
+
   end
 
   scope "/api", ChatWeb do
@@ -29,5 +37,5 @@ defmodule ChatWeb.Router do
 
     get "/messages/:user_id/:room_id/last", RoomController, :get_last_room_message
   end
-  
+
 end

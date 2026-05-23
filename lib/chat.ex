@@ -20,9 +20,31 @@ defmodule Chat do
 
   end
 
-  def list_rooms do
+  def get_all_public_rooms(amount) do
 
-    Repo.all(Room)
+    query = from r in Chat.Schemas.Room,
+      where: r.accessability == "public",
+      limit: ^amount,
+      select: %{
+        id: r.id,
+        name: r.room_name,
+        type: r.room_type,
+        logo_url: r.logo_url,
+        last_message: fragment(
+          "(SELECT body FROM messages WHERE room_id = ? ORDER BY inserted_at DESC LIMIT 1)",
+          r.id
+        ),
+        last_message_at: fragment(
+          "(SELECT inserted_at FROM messages WHERE room_id = ? ORDER BY inserted_at DESC LIMIT 1)",
+          r.id
+        ),
+        last_message_user_name: fragment(
+          "(SELECT user_name FROM messages WHERE room_id = ? ORDER BY inserted_at DESC LIMIT 1)",
+          r.id
+        )
+      }
+
+    Repo.all(query)
 
   end
 

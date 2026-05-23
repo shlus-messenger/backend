@@ -1,6 +1,14 @@
 defmodule ChatWeb.RoomController do
   use ChatWeb, :controller
 
+  def get_all_public_rooms(conn, params) do
+
+    rooms = Chat.get_all_public_rooms(params.amount)
+
+    json(conn, %{rooms: rooms})
+
+  end
+
   def get_rooms_by_user_id(conn, params) do
 
     rooms = Chat.get_rooms_by_user_id(params["user_id"])
