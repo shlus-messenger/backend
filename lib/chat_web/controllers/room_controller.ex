@@ -3,7 +3,7 @@ defmodule ChatWeb.RoomController do
 
   def get_all_public_rooms(conn, params) do
 
-    rooms = Chat.get_all_public_rooms(params.amount)
+    rooms = Chat.get_all_public_rooms(params["amount"])
 
     json(conn, %{rooms: rooms})
 
