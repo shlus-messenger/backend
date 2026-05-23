@@ -5,7 +5,7 @@ defmodule ChatWeb.RoomController do
 
     rooms = Chat.get_all_public_rooms(params["amount"])
 
-    json(conn, %{rooms: rooms})
+    json(conn, rooms)
 
   end
 
@@ -13,7 +13,7 @@ defmodule ChatWeb.RoomController do
 
     rooms = Chat.get_rooms_by_user_id(params["user_id"])
 
-    json(conn, %{rooms: rooms})
+    json(conn, rooms)
 
   end
 
