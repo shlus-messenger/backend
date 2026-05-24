@@ -41,6 +41,7 @@ defmodule ChatWeb.RoomChannel do
     broadcast!(socket, "new_message", %{
 
       user_id: user_id,
+      user_name: user_name,
       body: body,
       timestamp: DateTime.utc_now()
 
