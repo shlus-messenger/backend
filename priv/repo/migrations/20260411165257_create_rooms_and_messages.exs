@@ -35,24 +35,33 @@ defmodule Chat.Repo.Migrations.CreateRoomsAndMessages do
 
     end
 
-    create table(:room_participants, primary_key: false) do
-
-      add :id, :bigserial
-      add :room_id, references(:rooms, type: :uuid, on_delete: :delete_all)
-      add :user_id, :uuid, null: false
-      add :user_name, :text, null: false
-      timestamps()
-
-    end
-
     create table(:messages, primary_key: false) do
 
-      add :id, :bigserial
+      add :id, :uuid
       add :room_id, references(:rooms, type: :uuid, on_delete: :delete_all), null: false
       add :user_id, :uuid, null: false
       add :user_name, :text, null: false
       add :body, :text, null: false
+      add :views, :uuid, null: true
+      add :reply_to, :uuid, null: true
       timestamps()
+
+    end
+
+    create table(:message_views, primary_key: true) do
+
+      add :message_id, :uuid, null: false
+      add :user_id, :uuid, null: false
+      add :viewed_at, :utc_datetime_usec, null: false
+
+    end
+
+    create table(:message_reactions, primary_key: true) do
+
+      add :message_id, :uuid, null: false
+      add :user_id, :uuid, null: false
+      add :reacted_at, :utc_datetime_usec, null: false
+      add :reaction, :text, null: false
 
     end
 

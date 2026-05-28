@@ -2,7 +2,6 @@ defmodule Chat do
 
   alias Chat.Repo
   alias Chat.Schemas.Room
-  alias Chat.Schemas.RoomParticipant
   alias Chat.Schemas.User
   alias Chat.Schemas.Message
   import Ecto.Query
@@ -74,6 +73,7 @@ defmodule Chat do
         name: r.name,
         type: r.type,
         logo_url: r.logo_url,
+				members: r.members,
         last_message: fragment(
           "(SELECT body FROM messages WHERE room_id = ? ORDER BY inserted_at DESC LIMIT 1)",
           r.id
@@ -127,18 +127,6 @@ defmodule Chat do
 
   end
 
-  @spec join_room(
-          :invalid
-          | %{optional(:__struct__) => none(), optional(atom() | binary()) => any()}
-        ) :: any()
-  def join_room(attrs) do
-
-    %RoomParticipant{}
-    |> RoomParticipant.changeset(attrs)
-    |> Repo.insert()
-
-  end
-
   def new_message(attrs) do
 
     %Message{}
@@ -159,22 +147,13 @@ defmodule Chat do
 
   end
 
-  def get_online_users_by_room_id(room_id) do
+  def is_user_rooms_member(user_id, room_id) do
 
-    query = from u in Chat.Schemas.RoomParticipant,
-    where: u.room_id == ^room_id,
-    select: u
+    query = from r in Chat.Schemas.Room,
+			where: r.id == ^room_id and ^user_id in r.members,
+			select: count(r.id)
 
-    Repo.all(query)
-
-  end
-
-  def leave_room(room_id, user_id) do
-
-    query = from u in Chat.Schemas.RoomParticipant,
-    where: u.room_id == ^room_id and u.user_id == ^user_id
-
-    Repo.delete_all(query)
+		Repo.all(query) > 0
 
   end
 

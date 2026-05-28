@@ -48,22 +48,6 @@ defmodule Chat.Room do
 
   end
 
-
-  @spec join(any(), any()) :: any()
-  def join(room_id, user) do
-
-    GenServer.call(via_tuple(room_id), {:join, user})
-
-  end
-
-
-  def leave(room_id, user) do
-
-    GenServer.cast(via_tuple(room_id), {:leave, user})
-
-  end
-
-
   def send_message(room_id, user_id, user_name, message) do
 
     GenServer.cast(via_tuple(room_id), {:send_message, user_id, user_name, message})
@@ -71,64 +55,14 @@ defmodule Chat.Room do
   end
 
 
-  def get_users(room_id) do
-
-    GenServer.call(via_tuple(room_id), :get_users)
-
-  end
-
   def init([room_id, room_name]) do
 
-    users = Enum.map(Chat.get_online_users_by_room_id(room_id), fn u -> %{id: u.user_id, name: u.user_name} end)
-
-    IO.inspect(users)
-
-    {:ok, %{room_id: room_id, room_name: room_name, users: users, messages: []}}
-
-  end
-
-
-  def handle_call({:join, user}, _from, state) do
-
-      if user in state.users do
-        IO.puts("Already exist, skip...")
-        {:reply, {:ok, state.users}, state}
-
-      else
-
-        case Chat.join_room(%{
-          room_id: state.room_id,
-          user_id: user.id,
-          user_name: user.name
-        }) do
-
-          {:ok, _db_user} ->
-            Chat.regist_new_member(state.room_id, user.id)
-            new_state = %{state | users: [user | state.users]}
-            {:reply, {:ok, new_state.users}, new_state}
-
-          {:error, changeset} ->
-            {:error, changeset}
-
-        end
-
-      end
-
-  end
-
-  def handle_call(:get_users, _from, state) do
-
-    {:reply, {:ok, state.users}, state}
-
-  end
-
-  def handle_cast({:leave, user}, state) do
-
-    Chat.leave_room(state.room_id, user)
-
-    new_state = %{state | users: List.delete(state.users, user)}
-
-    {:noreply, new_state}
+    {:ok, %{
+      room_id: room_id,
+      room_name: room_name,
+      messages: []
+      }
+    }
 
   end
 

@@ -1,0 +1,19 @@
+{
+    "user_id": "who sent",
+    "watched_by": [
+        {
+            "user_id": "who watched",
+            "time": "when wathched"
+        }
+    ],
+    "time": "",
+    "body": "message body",
+    "reactions": [
+        {
+            "user_id": "who reacted",
+            "reaction": "reaction_id/reaction_emoji",
+            "time": "when reacted"
+        }
+    ],
+    "reply_to": "null/message_id this message replies"
+}

@@ -12,7 +12,7 @@ defmodule Chat.Application do
       Chat.Repo,
       {Registry, keys: :unique, name: Chat.RoomRegistry},
       {Phoenix.PubSub, name: Chat.PubSub},
-
+      ChatWeb.Presence,
       ChatWeb.Endpoint
 
     ]

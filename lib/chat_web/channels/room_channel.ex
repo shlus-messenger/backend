@@ -6,38 +6,58 @@ defmodule ChatWeb.RoomChannel do
     IO.puts("Connecting...")
 
     user_id = socket.assigns.user_id
-    user_name = socket.assigns.user_name
 
-    case Chat.Room.join(room_id, %{id: user_id, name: user_name}) do
+    if Chat.is_user_rooms_member(user_id, room_id) do
 
-      {:ok, _users} ->
+        send(self(), :after_join)
 
-        IO.puts("✅ Monitor PID: #{inspect(self())}")
         socket = assign(socket, :room_id, room_id)
         {:ok, socket}
 
+    else
 
-      {:error, reason} ->
+        Chat.regist_new_member(room_id, user_id) # Тут будет логика обработки приватных групп, ключей приглашения и так далее
 
-        IO.puts("❌ Join failed, reason: #{inspect(reason)}")
-        {:error, %{reason: "join failed: #{inspect(reason)}"}}
+        {:ok, socket}
 
     end
 
   end
 
-  def terminate(_reason, socket) do
+  def handle_info(:after_join, socket) do
 
-    IO.puts("Пользователь отключается...")
-    user = socket.assigns.user_id
-    room = socket.assigns.room_id
-    Chat.Room.leave(room, user)
+    user_id = socket.assigns.user_id
+    user_name = socket.assigns.user_name
 
-    :ok
+    ChatWeb.Presence.track(
+      socket,
+      user_id,
+      %{
+        user_name: user_name,
+        online_at: System.system_time(:second)
+      }
+    )
+
+    push(socket, "presence_state", ChatWeb.Presence.list(socket))
+
+    {:noreply, socket}
 
   end
 
-  @spec handle_in(<<_::88>>, map(), Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
+  def handle_in("typing", payload, socket) do
+
+    IO.puts("Handle typing...")
+
+    [{user_name, typing}] = Map.to_list(payload)
+
+    broadcast!(socket, "typing", %{
+        user_name => typing
+    })
+
+    {:noreply, socket}
+
+  end
+
   def handle_in("new_message", %{"body" => body}, socket) do
 
     IO.puts("Handle some message...")
