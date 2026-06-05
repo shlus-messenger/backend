@@ -25,6 +25,22 @@ defmodule ChatWeb.RoomController do
 
   end
 
+  def leave_room(conn, params) do
+
+    user_id = params["user_id"]
+    room_id = params["room_id"]
+
+    Chat.leave_room(room_id, user_id)
+
+    ChatWeb.Endpoint.broadcast("user:#{user_id}", "user_left_chat", %{
+      user_name: Chat.get_user_name_by_id(user_id),
+      room: room_id
+    })
+
+    json(conn, params)
+
+  end
+
   def create_new_room(conn, params) do
 
     name = params["name"]
@@ -34,35 +50,59 @@ defmodule ChatWeb.RoomController do
     type = params["type"]
     accessability = params["accessability"]
 
-    IO.inspect(params)
+    case logo do
 
-    case Chat.Room.start_link(name, user_id, nil, accessability, type) do
-      {:ok, _pid, room_data} ->
+      %Plug.Upload{} = upload ->
 
-        logo_url = if logo do
-          case Chat.upload_room_logo(room_data.id, logo) do
+        case Chat.Room.start_link(name, user_id, nil, accessability, type) do
+          {:ok, _pid, room_data} ->
 
-            {:ok, url} -> url
-            _ -> :ok
+            logo_url = case Chat.upload_room_logo(room_data.id, upload) do
 
-          end
+              {:ok, url} -> url
+              _ -> nil
+
+            end
+
+            ChatWeb.Endpoint.broadcast("user:#{user_id}", "chat_updated", %{
+              name: room_data.name,
+              logo_url: logo_url,
+              type: room_data.type,
+              id: room_data.id,
+              last_message: nil,
+              last_message_at: nil,
+              last_message_user_name: nil,
+              members: room_data.members
+            })
+
+            json(conn, nil)
+
+          {:error, _changeset} ->
+            send_resp(conn, 403, "")
         end
 
-        ChatWeb.Endpoint.broadcast("user:#{user_id}", "chat_updated", %{
-          name: room_data.name,
-          logo_url: logo_url,
-          type: room_data.type,
-          id: room_data.id,
-          last_message: nil,
-          last_message_at: nil,
-          last_message_user_name: nil
-        })
+      _ ->
 
-        json(conn, nil)
+        case Chat.Room.start_link(name, user_id, logo, accessability, type) do
+          {:ok, _pid, room_data} ->
 
-      {:error, _changeset} ->
-        send_resp(conn, 403, "")
+            ChatWeb.Endpoint.broadcast("user:#{user_id}", "chat_updated", %{
+              name: room_data.name,
+              logo_url: logo,
+              type: room_data.type,
+              id: room_data.id,
+              last_message: nil,
+              last_message_at: nil,
+              last_message_user_name: nil,
+              members: room_data.members
+            })
+
+            json(conn, nil)
+
+          {:error, _changeset} ->
+            send_resp(conn, 403, "")
+        end
+
     end
   end
-
 end

@@ -37,7 +37,7 @@ defmodule Chat.Repo.Migrations.CreateRoomsAndMessages do
 
     create table(:messages, primary_key: false) do
 
-      add :id, :uuid
+      add :id, :uuid, primary_key: true
       add :room_id, references(:rooms, type: :uuid, on_delete: :delete_all), null: false
       add :user_id, :uuid, null: false
       add :user_name, :text, null: false

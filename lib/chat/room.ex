@@ -72,7 +72,8 @@ defmodule Chat.Room do
       room_id: state.room_id,
       user_id: user_id,
       user_name: user_name,
-      body: message
+      body: message.body,
+      id: message.id
     }) do
 
       {:ok, _db_message} ->

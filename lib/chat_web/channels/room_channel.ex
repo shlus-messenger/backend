@@ -65,11 +65,12 @@ defmodule ChatWeb.RoomChannel do
     room = socket.assigns.room_id
     user_id = socket.assigns.user_id
     user_name = socket.assigns.user_name
+		message_id = Ecto.UUID.generate()
 
-    Chat.Room.send_message(room, user_id, user_name, body)
+    Chat.Room.send_message(room, user_id, user_name, %{body: body, id: message_id})
 
     broadcast!(socket, "new_message", %{
-
+      id: message_id,
       user_id: user_id,
       user_name: user_name,
       body: body,

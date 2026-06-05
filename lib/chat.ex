@@ -135,6 +135,18 @@ defmodule Chat do
 
   end
 
+  def leave_room(room_id, user_id) do
+
+    room = Repo.get(Room, room_id)
+
+    updated_members = Enum.reject(room.members, fn member -> member == user_id end)
+
+    room
+    |> Room.changeset(%{members: updated_members})
+    |> Repo.update()
+
+  end
+
   def get_messages_by_room_id(room_id, user_id) do
 
     query = from m in Chat.Schemas.Message,

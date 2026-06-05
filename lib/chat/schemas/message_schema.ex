@@ -4,6 +4,8 @@ defmodule Chat.Schemas.Message do
 
   @derive {Jason.Encoder, only: [:id, :room_id, :user_id, :user_name, :body, :inserted_at]}
 
+  @primary_key {:id, :binary_id, autogenerate: false}
+  @foreign_key_type :binary_id
   schema "messages" do
 
     field :room_id, :binary_id
@@ -17,7 +19,7 @@ defmodule Chat.Schemas.Message do
   def changeset(message, attrs) do
 
     message
-    |> cast(attrs, [:room_id, :user_id, :user_name, :body])
+    |> cast(attrs, [:id, :room_id, :user_id, :user_name, :body])
     |> validate_required([:room_id, :user_id, :user_name, :body])
 
   end
