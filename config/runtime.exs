@@ -5,7 +5,7 @@ if System.get_env("PHX_SERVER") do
   config :chat, ChatWeb.Endpoint, server: true
 end
 
-config :chat, ChatWeb.Endpoint, http: [port: String.to_integer(System.get_env("PORT", "4000"))]
+config :chat, ChatWeb.Endpoint, http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("PORT", "4000"))]
 
 source!([
   ".env",
