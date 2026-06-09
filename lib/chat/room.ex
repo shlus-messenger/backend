@@ -1,7 +1,7 @@
 defmodule Chat.Room do
   use GenServer
 
-  def start_link(room_name, owner_id, logo_url \\ nil, accessability, room_type, room_id \\ nil) do
+  def start_link(room_name, owner_id, logo, accessability, room_type, room_id \\ nil) do
 
     case room_id do
 
@@ -10,9 +10,10 @@ defmodule Chat.Room do
         IO.puts("Создаём новую комнату...")
 
         case Chat.create_room(%{
+          id: UUID.uuid4(),
           name: room_name,
           owner_id: owner_id,
-          logo_url: logo_url,
+          logo: logo,
           type: room_type,
           accessability: accessability,
           members: [owner_id]
@@ -68,17 +69,20 @@ defmodule Chat.Room do
 
   def handle_cast({:send_message, user_id, user_name, message}, state) do
 
+    IO.puts("try to save message...")
+
     case Chat.new_message(%{
       room_id: state.room_id,
       user_id: user_id,
       user_name: user_name,
+      reply_to: message.reply_to,
       body: message.body,
       id: message.id
     }) do
 
       {:ok, _db_message} ->
 
-        new_message = %{user_id: user_id, user_name: user_name, message: message, timestamp: DateTime.utc_now()}
+        new_message = %{user_id: user_id, reply_to: message.reply_to, user_name: user_name, message: message, timestamp: DateTime.utc_now()}
         new_state = %{state | messages: [new_message | state.messages]}
 
         {:noreply, new_state}

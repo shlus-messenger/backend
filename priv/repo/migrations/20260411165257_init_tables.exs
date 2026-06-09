@@ -1,4 +1,4 @@
-defmodule Chat.Repo.Migrations.CreateRoomsAndMessages do
+defmodule Repo.Migrations.CreateRoomsAndMessages do
   use Ecto.Migration
 
   def change do
@@ -8,8 +8,9 @@ defmodule Chat.Repo.Migrations.CreateRoomsAndMessages do
       add :id, :uuid, primary_key: true
       add :name, :string, null: false
       add :owner_id, :uuid, null: false
-      add :logo_url, :text, null: true
+      add :logo, :text, null: true
       add :accessability, :text, null: true
+      add :description, :text, null: true
       add :type, :text, null: false
       add :members, {:array, :text}, null: false
       timestamps()
@@ -18,11 +19,13 @@ defmodule Chat.Repo.Migrations.CreateRoomsAndMessages do
 
     create table(:users, primary_key: false) do
 
-      add :user_id, :uuid, primary_ley: true
+      add :id, :uuid, primary_key: true
       add :name, :text, null: false
-      add :avatar_url, :text, null: true
-      add :status, :text, null: false
-      add :last_seen_at, :utc_datetime_usec, null: true
+      add :login, :text, null: false
+      add :avatar, :text, null: true
+      add :password, :text, null: false
+      add :about_me, :text, null: true
+      timestamps()
 
     end
 
@@ -42,6 +45,7 @@ defmodule Chat.Repo.Migrations.CreateRoomsAndMessages do
       add :user_id, :uuid, null: false
       add :user_name, :text, null: false
       add :body, :text, null: false
+      add :reactions, {:array, :integer}
       add :views, :uuid, null: true
       add :reply_to, :uuid, null: true
       timestamps()
@@ -60,8 +64,9 @@ defmodule Chat.Repo.Migrations.CreateRoomsAndMessages do
 
       add :message_id, :uuid, null: false
       add :user_id, :uuid, null: false
+      add :user_name, :text, null: false
       add :reacted_at, :utc_datetime_usec, null: false
-      add :reaction, :text, null: false
+      add :emoji, :text, null: false
 
     end
 

@@ -18,7 +18,7 @@ defmodule ChatWeb.Telemetry do
 
     Supervisor.init(children, strategy: :one_for_one)
   end
-
+  
   def metrics do
     [
       # Phoenix Metrics

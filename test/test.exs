@@ -1,4 +1,3 @@
-import Dotenvy
-source!([".env"])
+alias Chat.Clients.Redis
 
-IO.puts("ENV data: " <> (System.get_env("S3_ACCESS_KEY") || "NOT SET"))
+Redis.set("test1", "some_value")
