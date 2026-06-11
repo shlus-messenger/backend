@@ -3,8 +3,6 @@ import Dotenvy
 
 Dotenvy.load!([".env"])
 
-IO.inspect(env)
-
 if env("PHX_SERVER") do
   config :chat, ChatWeb.Endpoint, server: true
 end
