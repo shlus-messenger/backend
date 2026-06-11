@@ -1,7 +1,7 @@
 import Config
 import Dotenvy
 
-env = source!(".env")
+Dotenvy.load!([".env"])
 
 IO.inspect(env)
 
