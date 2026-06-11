@@ -34,14 +34,14 @@ if config_env() == :prod do
     show_sensitive_data_on_connection_error: true
 
   config :ex_aws,
-  access_key_id: System.get_env!("S3_ACCESS_KEY"),
-  secret_access_key: System.get_env!("S3_SECRET_KEY"),
+  access_key_id: System.get_env("S3_ACCESS_KEY"),
+  secret_access_key: System.get_env("S3_SECRET_KEY"),
   region: "us-east-1"
 
   config :ex_aws, :s3,
-    scheme: System.get_env!("S3_SCHEME"),
-    host: System.get_env!("S3_HOST"),
-    port: System.get_env!("S3_PORT")
+    scheme: System.get_env("S3_SCHEME"),
+    host: System.get_env("S3_HOST"),
+    port: System.get_env("S3_PORT")
 
   config :chat, :redis,
     url: System.get_env!("REDIS_URL")
@@ -58,17 +58,17 @@ else
     show_sensitive_data_on_connection_error: true
 
   config :ex_aws,
-  access_key_id: System.get_env!("DEV_S3_ACCESS_KEY"),
-  secret_access_key: System.get_env!("DEV_S3_SECRET_KEY"),
+  access_key_id: System.get_env("DEV_S3_ACCESS_KEY"),
+  secret_access_key: System.get_env("DEV_S3_SECRET_KEY"),
   region: "us-east-1"
 
   config :ex_aws, :s3,
-    scheme: System.get_env!("DEV_S3_SCHEME"),
-    host: System.get_env!("DEV_S3_HOST"),
-    port: System.get_env!("DEV_S3_PORT")
+    scheme: System.get_env("DEV_S3_SCHEME"),
+    host: System.get_env("DEV_S3_HOST"),
+    port: System.get_env("DEV_S3_PORT")
 
   config :chat, :redis,
-    url: System.get_env!("DEV_REDIS_URL")
+    url: System.get_env("DEV_REDIS_URL")
 
 
 end
