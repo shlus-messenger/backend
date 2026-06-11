@@ -44,7 +44,7 @@ if config_env() == :prod do
     port: System.get_env("S3_PORT")
 
   config :chat, :redis,
-    url: System.get_env!("REDIS_URL")
+    url: System.get_env("REDIS_URL")
 
 else
 
