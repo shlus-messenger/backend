@@ -9,14 +9,22 @@ defmodule ChatWeb.UserController do
     login = params["login"]
     password = params["password"]
 
-    IO.inspect(params)
-
-    case User.create_user(name, login, avatar, Bcrypt.hash_pwd_salt(password)) do
+    case User.create(name, login, avatar, Bcrypt.hash_pwd_salt(password)) do
 
       {:ok, data} ->
-          json(conn, data)
+        json(conn, data)
+      {:error, :already_exists} ->
+        send_resp(conn, 403, "User already exists")
 
     end
+
+  end
+
+  def check_user_exists(conn, params) do
+
+    login = params["login"]
+
+    json(conn, %{exists: Chat.is_user_exist(login)})
 
   end
 
@@ -25,26 +33,23 @@ defmodule ChatWeb.UserController do
     login = params["login"]
     password = params["password"]
 
-    case User.auth_user(login, password) do
+    case User.login(login, password) do
 
         {:ok, data} -> json(conn, data)
-        {:error, :incorrect_data} -> send_resp(conn, 401, "")
+        {:error, :incorrect_data} -> send_resp(conn, 401, "wrong password")
         {:no_such_user} -> send_resp(conn, 401, "")
 
     end
   end
 
-  def unlogin_user(conn, params) do
+  def logout_user(conn, params) do
 
     user_id = params["user_id"]
+    token = conn.assigns.token
 
-    case User.delete_user(user_id) do
+    User.logout(user_id, token)
 
-      {:ok} -> send_resp(conn, 200, "")
-      {:error, :invalid_token} -> send_resp(conn, 401, "")
-      {:error, :no_such_user} -> send_resp(conn, 403, "")
-
-    end
+    send_resp(conn, 200, "")
 
   end
 

@@ -52,6 +52,10 @@ defmodule Chat do
 
   end
 
+  def is_user_exist(login) do
+    Repo.exists?(from u in User, where: u.login == ^login)
+  end
+
   def get_user_avatar_by_id(user_id) do
 
     query = from u in User,
@@ -137,34 +141,6 @@ defmodule Chat do
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()
-
-  end
-
-  def change_user_status(user_id, status) when status in [:online, :offline] do
-
-    user = Repo.get_by(User, id: user_id)
-
-    if user do
-
-      if status == :online do
-
-        user
-        |> User.changeset(%{status: "online"})
-        |> Repo.update()
-
-      else
-
-        user
-        |> User.changeset(%{status: "offline", last_seen_at: DateTime.utc_now()})
-        |> Repo.update()
-
-      end
-
-    else
-
-      {:error, :user_not_found}
-
-    end
 
   end
 

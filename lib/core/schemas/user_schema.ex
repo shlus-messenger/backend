@@ -19,6 +19,7 @@ defmodule User.Schemas.User do
     user
     |> cast(attrs, [:name, :login, :avatar, :password, :about_me])
     |> validate_required([:name, :login, :password])
+    |> unique_constraint(:login)
 
   end
 

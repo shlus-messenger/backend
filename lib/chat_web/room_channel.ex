@@ -4,34 +4,32 @@ defmodule ChatWeb.RoomChannel do
   alias Chat.User
 
   def join("room:" <> room_id, _payload, socket) do
-
     user_id = socket.assigns.user_id
     token = socket.assigns.token
 
     case User.verify_token(user_id, token) do
+      {:ok, 1} ->
+        case Registry.lookup(Chat.RoomRegistry, {:room, room_id}) do
+          [] ->
+            room = Chat.get_room!(room_id)
+            DynamicSupervisor.start_child(Chat.RoomSupervisor, {Chat.Room, [room.name, room_id]})
+            Process.sleep(10)
+          _ ->
+            :ok
+        end
 
-			true ->
+        # Добавляем пользователя в комнату, если его нет
+        unless Chat.is_user_rooms_member(user_id, room_id) do
+          Chat.regist_new_member(room_id, user_id)
+        end
 
-				if Chat.is_user_rooms_member(user_id, room_id) do
+        send(self(), :after_join)
+        socket = assign(socket, :room_id, room_id)
+        {:ok, socket}
 
-						send(self(), :after_join)
-
-						socket = assign(socket, :room_id, room_id)
-						{:ok, socket}
-
-				else
-
-						Chat.regist_new_member(room_id, user_id) # Тут будет логика обработки приватных групп, ключей приглашения и так далее
-
-						{:ok, socket}
-
-				end
-
-			false -> {:error, %{reason: "unathorized"}}
-			{:error, :no_such_user} -> {:error, %{reason: "unathorized"}}
-
-		end
-
+      {:ok, 0} ->
+        {:error, %{reason: "unauthorized"}}
+    end
   end
 
   def handle_info(:after_join, socket) do
@@ -127,6 +125,8 @@ defmodule ChatWeb.RoomChannel do
     user_id = socket.assigns.user_id
     user_name = socket.assigns.user_name
 		message_id = Ecto.UUID.generate()
+
+    IO.puts("Handle message")
 
     Chat.Room.send_message(room, user_id, user_name, %{body: body, id: message_id, reply_to: reply_to})
 

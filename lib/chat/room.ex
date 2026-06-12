@@ -1,44 +1,7 @@
 defmodule Chat.Room do
   use GenServer
 
-  def start_link(room_name, owner_id, logo, accessability, room_type, room_id \\ nil) do
-
-    case room_id do
-
-      nil ->
-
-        IO.puts("Создаём новую комнату...")
-
-        case Chat.create_room(%{
-          id: UUID.uuid4(),
-          name: room_name,
-          owner_id: owner_id,
-          logo: logo,
-          type: room_type,
-          accessability: accessability,
-          members: [owner_id]
-        }) do
-
-          {:ok, db_room} ->
-
-            {:ok, pid} = GenServer.start_link(__MODULE__, [db_room.id, room_name], name: via_tuple(db_room.id))
-
-            {:ok, pid, db_room}
-
-          {:error, changeset} ->
-
-            {:error, changeset}
-
-        end
-
-      id ->
-
-        start_server(id, room_name)
-
-    end
-  end
-
-  def start_server(room_id, room_name) do
+  def start_link([room_name, room_id]) do
 
     case GenServer.start_link(__MODULE__, [room_id, room_name], name: via_tuple((room_id))) do
 
@@ -46,6 +9,7 @@ defmodule Chat.Room do
       error -> error
 
     end
+
 
   end
 

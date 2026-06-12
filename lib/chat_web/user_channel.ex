@@ -68,14 +68,4 @@ defmodule UserWeb.UserChannel do
 
   end
 
-  def terminate(_reason, socket) do
-
-    user_id = socket.assigns.user_id
-
-    Chat.change_user_status(user_id, :offline)
-
-    IO.puts("User (#{user_id}) disconnected")
-
-  end
-
 end

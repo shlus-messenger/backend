@@ -72,6 +72,7 @@ defmodule Repo.Migrations.CreateRoomsAndMessages do
 
     create index(:messages, [:room_id])
     create index(:messages, [:inserted_at])
+    create unique_index(:users, [:login])
 
   end
 end

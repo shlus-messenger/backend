@@ -11,8 +11,11 @@ defmodule ChatWeb.Plugs.Auth do
       {:ok, token, user_id} ->
         IO.puts("Token: " <> token)
         case User.verify_token(user_id, token) do
-          true -> assign(conn, :user_id, user_id)
-          false -> unauthorized(conn)
+          {:ok, 1} ->
+            conn
+            |> assign(:user_id, user_id)
+            |> assign(:token, token)
+          {:ok, 0} -> unauthorized(conn)
         end
       _ -> unauthorized(conn)
     end
@@ -21,6 +24,7 @@ defmodule ChatWeb.Plugs.Auth do
   defp get_token(conn) do
     case get_req_header(conn, "authorization") do
       ["Bearer " <> token] ->
+        IO.puts("Token: #{token}")
         user_id = conn.params["user_id"] || conn.body_params["user_id"]
         {:ok, token, user_id}
       _ ->

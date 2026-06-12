@@ -11,6 +11,7 @@ defmodule Chat.Application do
 
       Chat.Repo,
       {Registry, keys: :unique, name: Chat.RoomRegistry},
+      {DynamicSupervisor, name: Chat.RoomSupervisor, strategy: :one_for_one},
       {Phoenix.PubSub, name: Chat.PubSub},
       {Redix, [
         host: System.get_env("REDIS_HOST", "localhost"),
@@ -26,8 +27,6 @@ defmodule Chat.Application do
     opts = [strategy: :one_for_one, name: Chat.Supervisor]
     {:ok, pid} = Supervisor.start_link(children, opts)
 
-    restore_rooms_from_db()
-
     {:ok, pid}
 
   end
@@ -40,27 +39,6 @@ defmodule Chat.Application do
     else
       :ok
     end
-  end
-
-  defp restore_rooms_from_db do
-
-    rooms = Chat.list_rooms()
-
-    for room <- rooms do
-
-      case Chat.Room.start_link(room.name, room.owner_id, room.logo, room.accessability, room.type, room.id) do
-
-        {:ok, _pid, room_id} ->
-          IO.puts("✅ Restored room: #{room.name} (ID: #{room_id})")
-        {:error, {:already_started, _pid}} ->
-          IO.puts("⚠️ Room already running: #{room.name}")
-        {:error, error} ->
-          IO.puts("❌ Failed to restore room #{room.name}: #{inspect(error)}")
-
-      end
-
-    end
-
   end
 
   @impl true

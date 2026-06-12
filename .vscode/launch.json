@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "mix_task",
+      "name": "Mix: phx.server",
+      "request": "launch",
+      "task": "phx.server",
+      "projectDir": "${workspaceFolder}",
+      "exitAfterTaskReturns": false,
+      "env": {
+        "MIX_ENV": "dev",
+        "PORT": "4000"
+      }
+    }
+  ]
+}

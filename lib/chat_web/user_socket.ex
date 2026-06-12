@@ -18,7 +18,7 @@ defmodule ChatWeb.UserSocket do
 
         case Chat.User.verify_token(user_id, token) do
 
-          true ->
+          {:ok, 1} ->
 
             socket = socket
               |> assign(:user_id, user_id)
@@ -27,7 +27,7 @@ defmodule ChatWeb.UserSocket do
 
             {:ok, socket}
 
-          false ->
+          {:ok, 0} ->
 
             {:error, :unauthorized}
 

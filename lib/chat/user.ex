@@ -4,7 +4,7 @@ defmodule Chat.User do
   alias Chat.Repo
   alias Chat.Clients.Redis
 
-  def create_user(name, login, avatar, password) do
+  def create(name, login, avatar, password) do
 
     case avatar do
 
@@ -12,109 +12,127 @@ defmodule Chat.User do
 
 				case %User.Schemas.User{}
 				|> User.Schemas.User.changeset(%{
-						name: name,
-						login: login,
-						password: password
+								name: name,
+								login: login,
+								password: password
 				})
 				|> Repo.insert() do
 
 					{:ok, user} ->
 
-						token =
-							:crypto.strong_rand_bytes(32)
-							|> Base.url_encode64(padding: false)
+							token =
+									:crypto.strong_rand_bytes(32)
+									|> Base.url_encode64(padding: false)
 
-						Redis.set(user.id, token)
+							Redis.sadd(user.id, token)
 
-						upload_user_avatar(user.id, upload)
+							upload_avatar(user.id, upload)
 
-						{:ok, %{
-							user_id: user.id,
-							user_name: user.name,
-							token: token
-						}}
+							{:ok, %{
+									user_id: user.id,
+									user_name: user.name,
+									token: token
+							}}
 
 					{:error, changeset} ->
-						IO.inspect(changeset)
-						{:error, :changeset}
+            IO.inspect(changeset.errors, label: "ERRORS")
+            case changeset.errors[:login] do
+              {_, [constraint: :unique, constraint_name: "users_login_index"]} ->
+                {:error, :already_exists}
+              _ -> {:error, :changeset}
+            end
 
-				end
+			end
 
-			_ ->
+    _ ->
 
-				case %User.Schemas.User{}
-					|> User.Schemas.User.changeset(%{
+		case %User.Schemas.User{}
+			|> User.Schemas.User.changeset(%{
 							name: name,
 							login: login,
 							avatar: avatar,
 							password: password
-					})
-					|> Repo.insert() do
+			})
+			|> Repo.insert() do
 
-						{:ok, user} ->
+					{:ok, user} ->
 
 							token =
-								:crypto.strong_rand_bytes(32)
-								|> Base.url_encode64(padding: false)
+									:crypto.strong_rand_bytes(32)
+									|> Base.url_encode64(padding: false)
 
-							Redis.set(user.id, token)
+							Redis.sadd(user.id, token)
 
 							{:ok, %{
-								user_id: user.id,
-								user_name: user.name,
-								token: token
+									user_id: user.id,
+									user_name: user.name,
+									token: token
 							}}
 
-						{:error, changeset} ->
-							IO.inspect(changeset)
-							{:error, :changeset}
+					{:error, changeset} ->
+            IO.inspect(changeset.errors, label: "ERRORS")
+            case changeset.errors[:login] do
+              {_, [constraint: :unique, constraint_name: "users_login_index"]} ->
+                {:error, :already_exists}
+              _ -> {:error, :changeset}
+            end
 
-					end
+				end
 
     end
 
   end
 
-  def delete_user(user_id) do
+  def delete(user_id) do
 
-		user = Repo.get(User.Schemas.User, user_id)
+    user = Repo.get(User.Schemas.User, user_id)
 
-		Repo.delete(user)
+    Repo.delete(user)
 
-		Redis.delete(user_id)
+    Redis.delete(user_id)
 
-		{:ok}
+    {:ok}
 
   end
 
-  def upload_user_avatar(user_id, file) do
+	def logout(user_id, token) do
+
+    IO.puts("User #{user_id} logout with token #{token}")
+
+    Redis.srem(user_id, token)
+
+	end
+
+  def upload_avatar(user_id, file) do
 
     case File.read(file.path) do
 
 			{:ok, binary} ->
 
-				key = "#{user_id}/avatar/#{file.filename}"
-				link = Chat.Clients.S3.build_key_url(key, "users")
+					key = "#{user_id}/avatar/#{file.filename}"
+					link = Chat.Clients.S3.build_key_url(key, "users")
 
-				Chat.Clients.S3.upload_file(binary, key, file.content_type, "users")
+					Chat.Clients.S3.upload_file(binary, key, file.content_type, "users")
 
-				query = from u in User.Schemas.User, where: u.id == ^user_id, update: [set: [avatar: ^link]]
+					query = from u in User.Schemas.User, where: u.id == ^user_id, update: [set: [avatar: ^link]]
 
-				Repo.update_all(query, [])
+					Repo.update_all(query, [])
 
-				{:ok, link}
+					{:ok, link}
 
     end
 
   end
 
-  def get_user(user_id) do
+  def get(user_id) do
 
     Repo.get(User, user_id)
 
   end
 
-  def auth_user(login, password) do
+  def login(login, password) do
+
+    IO.puts("Try connect. Login: #{login}, password: #{password}")
 
     query = from u in User.Schemas.User,
       where: u.login == ^login,
@@ -134,7 +152,7 @@ defmodule Chat.User do
               :crypto.strong_rand_bytes(32)
               |> Base.url_encode64(padding: false)
 
-            Redis.set(user_id, token)
+            Redis.sadd(user_id, token)
 
             {:ok, %{
               user_id: user_id,
@@ -152,12 +170,7 @@ defmodule Chat.User do
 
   def verify_token(user_id, token) do
 
-    case Redis.get(user_id) do
-
-      {:ok, user_token} -> user_token == token
-      {:ok, nil} -> {:error, :no_such_user}
-
-    end
+    Redis.sismember(user_id, token)
 
   end
 

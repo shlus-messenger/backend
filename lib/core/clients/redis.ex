@@ -16,4 +16,20 @@ defmodule Chat.Clients.Redis do
     Redix.command(__MODULE__, ["GET", key])
   end
 
+  def sadd(key, value) do
+    Redix.command(__MODULE__, ["SADD", key, value])
+  end
+
+  def sismember(key, value) do
+    Redix.command(__MODULE__, ["SISMEMBER", key, value])
+  end
+
+  def srem(key, value) do
+    Redix.command(__MODULE__, ["SREM", key, value])
+  end
+
+  def smembers(key) do
+    Redix.command(__MODULE__, ["SMEMBERS", key])
+  end
+
 end

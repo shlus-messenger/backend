@@ -63,7 +63,13 @@ defmodule ChatWeb.Router do
   scope "/", ChatWeb do
     pipe_through :secure_api
 
-    delete "/user", UserController, :unlogin_user
+    delete "/user", UserController, :logout_user
+  end
+
+  scope "/", ChatWeb do
+    pipe_through :public_api
+
+    post "/user/check_existing", UserController, :check_user_exists
   end
 
 end

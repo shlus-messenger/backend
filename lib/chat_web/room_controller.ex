@@ -50,21 +50,29 @@ defmodule ChatWeb.RoomController do
     type = params["type"]
     accessability = params["accessability"]
 
-      case Chat.Room.start_link(name, user_id, logo, accessability, type) do
-        {:ok, _pid, room_data} ->
+    case Chat.create_room(%{
+      id: UUID.uuid4(),
+      name: name,
+      owner_id: user_id,
+      logo: logo,
+      type: type,
+      accessability: accessability,
+      members: [user_id]
+    }) do
 
-          ChatWeb.Endpoint.broadcast("user:#{user_id}", "add_in_new_chat", %{
-            name: room_data.name,
-            logo: room_data.logo,
-            type: room_data.type,
-            id: room_data.id,
-            members: room_data.members
-          })
+      {:ok, room_data} ->
 
-          json(conn, nil)
+        ChatWeb.Endpoint.broadcast("user:#{user_id}", "add_in_new_chat", %{
+          name: room_data.name,
+          logo: room_data.logo,
+          type: room_data.type,
+          id: room_data.id,
+          members: room_data.members
+        })
 
-        {:error, _changeset} ->
-          send_resp(conn, 403, "")
-      end
+        json(conn, nil)
+
+    end
+
   end
 end
