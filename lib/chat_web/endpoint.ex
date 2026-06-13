@@ -54,5 +54,7 @@ defmodule ChatWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+  plug PromEx.Plug, prom_ex_module: ChatWeb.PromEx
+
   plug ChatWeb.Router
 end

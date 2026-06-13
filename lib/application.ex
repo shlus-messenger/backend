@@ -17,7 +17,8 @@ defmodule Chat.Application do
       {Phoenix.PubSub, name: Chat.PubSub},
       Chat.Clients.Redis,
       ChatWeb.Presence,
-      ChatWeb.Endpoint
+      ChatWeb.Endpoint,
+      ChatWeb.PromEx
 
     ]
 

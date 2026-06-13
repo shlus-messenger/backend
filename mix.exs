@@ -46,7 +46,8 @@ defmodule Chat.MixProject do
       {:sweet_xml, "~> 0.7"},
       {:bcrypt_elixir, "~> 3.0"},
       {:redix, "~> 1.2"},
-      {:swoosh, "~> 1.16"}
+      {:swoosh, "~> 1.16"},
+      {:prom_ex, "~> 1.11.0"}
     ]
   end
 
