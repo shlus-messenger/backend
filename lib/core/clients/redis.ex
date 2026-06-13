@@ -1,7 +1,10 @@
 defmodule Chat.Clients.Redis do
-
   def start_link(_opts \\ []) do
-    Redix.start_link("redis://localhost:6379", name: __MODULE__)
+    redis_url = Application.get_env(:chat, :redis)[:url]
+
+    IO.puts("Redis started on #{redis_url}")
+
+    Redix.start_link(redis_url, name: __MODULE__)
   end
 
   def set(key, value) do
