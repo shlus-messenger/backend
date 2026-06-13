@@ -8,7 +8,7 @@ source!([
 
 
 
-if env("PHX_SERVER", "false") == true do
+if env("PHX_SERVER", "false") == "true" do
   config :chat, ChatWeb.Endpoint, server: true
 end
 
