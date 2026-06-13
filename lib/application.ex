@@ -13,12 +13,7 @@ defmodule Chat.Application do
       {Registry, keys: :unique, name: Chat.RoomRegistry},
       {DynamicSupervisor, name: Chat.RoomSupervisor, strategy: :one_for_one},
       {Phoenix.PubSub, name: Chat.PubSub},
-      {Redix, [
-        host: System.get_env("REDIS_HOST", "localhost"),
-        port: String.to_integer(System.get_env("REDIS_PORT", "6379")),
-        database: String.to_integer(System.get_env("REDIS_DB", "0")),
-        name: Chat.Clients.Redis
-      ]},
+      Chat.Clients.Redis,
       ChatWeb.Presence,
       ChatWeb.Endpoint
 

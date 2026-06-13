@@ -1,4 +1,15 @@
 defmodule Chat.Clients.Redis do
+
+  def child_spec(_opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, []},
+      type: :worker,
+      restart: :permanent,
+      shutdown: 500
+    }
+  end
+
   def start_link(_opts \\ []) do
     redis_url = Application.get_env(:chat, :redis)[:url]
 
