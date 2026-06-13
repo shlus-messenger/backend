@@ -5,6 +5,8 @@ defmodule Chat.Application do
   @impl true
   def start(_type, _args) do
 
+    IO.puts("Check WUD works")
+
     :ok = run_migrations()
 
     children = [

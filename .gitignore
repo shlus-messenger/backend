@@ -28,3 +28,5 @@ chat-*.tar
 .elixir_ls/
 
 .env
+
+.vscode/
