@@ -19,7 +19,7 @@ if config_env() == :prod do
    env!("SECRET_KEY_BASE") ||
       raise "environment variable SECRET_KEY_BASE is missing"
 
-  host = env!("PHX_HOST") || "localhost"
+  host = env("PHX_HOST", :striing, "localhost")
 
   config :chat, ChatWeb.Endpoint,
     url: [host: host, port: 4000],
