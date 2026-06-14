@@ -8,7 +8,13 @@ defmodule ChatWeb.PromEx do
   def plugins do
     [
       Plugins.Application,
-      Plugins.Beam
+      Plugins.Beam,
+
+      {
+        Plugins.Phoenix,
+        router: ChatWeb.Router,
+        endpoint: ChatWeb.Endpoint
+      }
     ]
   end
 

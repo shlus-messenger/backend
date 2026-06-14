@@ -33,6 +33,8 @@ defmodule ChatWeb.Endpoint do
     plug Phoenix.CodeReloader
   end
 
+  plug PromEx.Plug, prom_ex_module: ChatWeb.PromEx
+
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
     cookie_key: "request_logger"
@@ -46,15 +48,14 @@ defmodule ChatWeb.Endpoint do
     json_decoder: Phoenix.json_library()
 
   plug Corsica, origins: ["http://localhost:5173", "http://localhost:5174"],
-                allow_credentials: true,
-                allow_headers: :all,
-                max_age: 86400,
-                allow_methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
+    allow_credentials: true,
+    allow_headers: :all,
+    max_age: 86400,
+    allow_methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
 
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
-  plug PromEx.Plug, prom_ex_module: ChatWeb.PromEx
 
   plug ChatWeb.Router
 end

@@ -10,7 +10,7 @@ defmodule Chat.Application do
     :ok = run_migrations()
 
     children = [
-
+      ChatWeb.PromEx,
       Chat.Repo,
       {Registry, keys: :unique, name: Chat.RoomRegistry},
       {DynamicSupervisor, name: Chat.RoomSupervisor, strategy: :one_for_one},
@@ -18,7 +18,6 @@ defmodule Chat.Application do
       Chat.Clients.Redis,
       ChatWeb.Presence,
       ChatWeb.Endpoint,
-      ChatWeb.PromEx
 
     ]
 
