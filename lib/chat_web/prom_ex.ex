@@ -30,7 +30,8 @@ defmodule ChatWeb.PromEx do
   def dashboards do
     [
       {:prom_ex, "application.json"},
-      {:prom_ex, "beam.json"}
+      {:prom_ex, "beam.json"},
+      {:prom_ex, "phoenix.json"}
     ]
   end
 end
