@@ -46,4 +46,20 @@ defmodule Chat.Clients.Redis do
     Redix.command(__MODULE__, ["SMEMBERS", key])
   end
 
+  def hset(key, field, value) do
+    Redix.command(__MODULE__, ["HSET", key, field, value])
+  end
+
+  def hget(key, field) do
+    Redix.command(__MODULE__, ["HGET", key, field])
+  end
+
+  def hkeys(key) do
+    Redix.command(__MODULE__, ["HKEYS", key])
+  end
+
+  def hdel(key, field) do
+    Redix.command(__MODULE__, ["HDEL", key, field])
+  end
+
 end

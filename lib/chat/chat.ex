@@ -231,8 +231,6 @@ defmodule Chat do
 
   def new_message(attrs) do
 
-    IO.puts("save message...")
-
     %Message{}
     |> Message.changeset(attrs)
     |> Repo.insert()

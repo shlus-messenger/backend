@@ -18,6 +18,7 @@ defmodule Chat.Application do
       Chat.Clients.Redis,
       ChatWeb.Presence,
       ChatWeb.Endpoint,
+      {Goth, name: PushX.Goth}
 
     ]
 

@@ -4,7 +4,9 @@ defmodule Chat.User do
   alias Chat.Repo
   alias Chat.Clients.Redis
 
-  def create(name, login, avatar, password) do
+  def create(name, login, avatar, password, fcm_token) do
+
+    IO.puts("Recieved FCM Token: #{fcm_token}")
 
     case avatar do
 
@@ -20,18 +22,18 @@ defmodule Chat.User do
 
 					{:ok, user} ->
 
-							token =
+							auth_token =
 									:crypto.strong_rand_bytes(32)
 									|> Base.url_encode64(padding: false)
 
-							Redis.sadd(user.id, token)
+							add_authorization_pair(user.id, fcm_token, auth_token)
 
 							upload_avatar(user.id, upload)
 
 							{:ok, %{
 									user_id: user.id,
 									user_name: user.name,
-									token: token
+									auth_token: auth_token
 							}}
 
 					{:error, changeset} ->
@@ -57,16 +59,16 @@ defmodule Chat.User do
 
 					{:ok, user} ->
 
-							token =
+							auth_token =
 									:crypto.strong_rand_bytes(32)
 									|> Base.url_encode64(padding: false)
 
-							Redis.sadd(user.id, token)
+							add_authorization_pair(user.id, fcm_token, auth_token)
 
 							{:ok, %{
 									user_id: user.id,
 									user_name: user.name,
-									token: token
+									auth_token: auth_token
 							}}
 
 					{:error, changeset} ->
@@ -95,12 +97,8 @@ defmodule Chat.User do
 
   end
 
-	def logout(user_id, token) do
-
-    IO.puts("User #{user_id} logout with token #{token}")
-
-    Redis.srem(user_id, token)
-
+	def logout(user_id, fcm_token) do
+    Redis.hdel(user_id, fcm_token)
 	end
 
   def upload_avatar(user_id, file) do
@@ -109,16 +107,16 @@ defmodule Chat.User do
 
 			{:ok, binary} ->
 
-					key = "#{user_id}/avatar/#{file.filename}"
-					link = Chat.Clients.S3.build_key_url(key, "users")
+        key = "#{user_id}/avatar/#{file.filename}"
+        link = Chat.Clients.S3.build_key_url(key, "users")
 
-					Chat.Clients.S3.upload_file(binary, key, file.content_type, "users")
+        Chat.Clients.S3.upload_file(binary, key, file.content_type, "users")
 
-					query = from u in User.Schemas.User, where: u.id == ^user_id, update: [set: [avatar: ^link]]
+        query = from u in User.Schemas.User, where: u.id == ^user_id, update: [set: [avatar: ^link]]
 
-					Repo.update_all(query, [])
+        Repo.update_all(query, [])
 
-					{:ok, link}
+        {:ok, link}
 
     end
 
@@ -130,7 +128,7 @@ defmodule Chat.User do
 
   end
 
-  def login(login, password) do
+  def login(login, password, fcm_token) do
 
     IO.puts("Try connect. Login: #{login}, password: #{password}")
 
@@ -148,16 +146,16 @@ defmodule Chat.User do
 
           true ->
 
-            token =
+            auth_token =
               :crypto.strong_rand_bytes(32)
               |> Base.url_encode64(padding: false)
 
-            Redis.sadd(user_id, token)
+            Redis.hset(user_id, fcm_token, auth_token)
 
             {:ok, %{
               user_id: user_id,
               user_name: user_name,
-              token: token
+              auth_token: auth_token
             }}
 
           false -> {:error, :incorrect_data}
@@ -168,10 +166,15 @@ defmodule Chat.User do
 
   end
 
-  def verify_token(user_id, token) do
+  def verify_token(user_id, fcm_token, auth_token) do
+    case Redis.hget(user_id, fcm_token) do
+      {:ok, ^auth_token} -> true
+      _ -> false
+    end
+  end
 
-    Redis.sismember(user_id, token)
-
+  def add_authorization_pair(user_id, fcm_token, auth_token) do
+    Redis.hset(user_id, fcm_token, auth_token)
   end
 
 end

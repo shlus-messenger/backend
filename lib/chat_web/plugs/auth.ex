@@ -7,32 +7,35 @@ defmodule ChatWeb.Plugs.Auth do
 
   def call(conn, _opts) do
     IO.inspect(conn.req_headers, label: "Request headers")
-    case get_token(conn) do
-      {:ok, token, user_id} ->
-        IO.puts("Token: " <> token)
-        case User.verify_token(user_id, token) do
-          {:ok, 1} ->
+    case get_auth_pair(conn) do
+      {:ok, auth_pair, user_id} ->
+        case User.verify_token(user_id, auth_pair.fcm_token, auth_pair.auth_token) do
+          true ->
             conn
             |> assign(:user_id, user_id)
-            |> assign(:token, token)
-          {:ok, 0} -> unauthorized(conn)
+            |> assign(:auth_token, auth_pair.auth_token)
+            |> assign(:fcm_token, auth_pair.fcm_token)
+          false -> unauthorized(conn)
         end
       _ -> unauthorized(conn)
     end
   end
 
-  defp get_token(conn) do
+  defp get_auth_pair(conn) do
     case get_req_header(conn, "authorization") do
-      ["Bearer " <> token] ->
-        IO.puts("Token: #{token}")
+      ["Bearer " <> auth_token] ->
         user_id = conn.params["user_id"] || conn.body_params["user_id"]
-        {:ok, token, user_id}
+        case get_req_header(conn, "x-fcm-token") do
+          [fcm_token] ->
+            {:ok, %{fcm_token: fcm_token, auth_token: auth_token}, user_id}
+        end
       _ ->
-        token = conn.params["token"]
+        auth_token = conn.params["auth_token"]
+        fcm_token = conn.params["fcm_token"]
         user_id = conn.params["user_id"]
 
-        if token && user_id do
-          {:ok, token, user_id}
+        if auth_token && fcm_token && user_id do
+          {:ok, %{auth_token: auth_token, fcm_token: fcm_token}, user_id}
         else
           :error
         end

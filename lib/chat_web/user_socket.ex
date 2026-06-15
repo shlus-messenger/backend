@@ -8,30 +8,28 @@ defmodule ChatWeb.UserSocket do
 
     user_id = params["user_id"]
     user_name = params["user_name"]
-    token = params["token"]
+    auth_token = params["auth_token"]
+    fcm_token = params["fcm_token"]
 
-    case token do
+    if is_nil(auth_token) && is_nil(fcm_token) do
+      {:error, %{reason: "Missing token"}}
+    end
 
-      nil -> {:error, %{reason: "Missing token"}}
+    case Chat.User.verify_token(user_id, fcm_token, auth_token) do
 
-      token ->
+      true ->
 
-        case Chat.User.verify_token(user_id, token) do
+        socket = socket
+          |> assign(:user_id, user_id)
+          |> assign(:user_name, user_name)
+          |> assign(:fcm_token, fcm_token)
+          |> assign(:auth_token, auth_token)
 
-          {:ok, 1} ->
+        {:ok, socket}
 
-            socket = socket
-              |> assign(:user_id, user_id)
-              |> assign(:user_name, user_name)
-              |> assign(:token, token)
+      false ->
 
-            {:ok, socket}
-
-          {:ok, 0} ->
-
-            {:error, :unauthorized}
-
-        end
+        {:error, :unauthorized}
 
     end
   end

@@ -2,13 +2,15 @@ defmodule ChatWeb.RoomChannel do
   use Phoenix.Channel
   alias Chat.Schemas.Message
   alias Chat.User
+  alias Chat.Clients.Redis
 
   def join("room:" <> room_id, _payload, socket) do
     user_id = socket.assigns.user_id
-    token = socket.assigns.token
+    auth_token = socket.assigns.auth_token
+    fcm_token = socket.assigns.fcm_token
 
-    case User.verify_token(user_id, token) do
-      {:ok, 1} ->
+    case User.verify_token(user_id, fcm_token, auth_token) do
+      true ->
         case Registry.lookup(Chat.RoomRegistry, {:room, room_id}) do
           [] ->
             room = Chat.get_room!(room_id)
@@ -18,7 +20,6 @@ defmodule ChatWeb.RoomChannel do
             :ok
         end
 
-        # Добавляем пользователя в комнату, если его нет
         unless Chat.is_user_rooms_member(user_id, room_id) do
           Chat.regist_new_member(room_id, user_id)
         end
@@ -27,7 +28,7 @@ defmodule ChatWeb.RoomChannel do
         socket = assign(socket, :room_id, room_id)
         {:ok, socket}
 
-      {:ok, 0} ->
+      false ->
         {:error, %{reason: "unauthorized"}}
     end
   end
@@ -126,8 +127,6 @@ defmodule ChatWeb.RoomChannel do
     user_name = socket.assigns.user_name
 		message_id = Ecto.UUID.generate()
 
-    IO.puts("Handle message")
-
     Chat.Room.send_message(room, user_id, user_name, %{body: body, id: message_id, reply_to: reply_to})
 
     broadcast!(socket, "new_message", Chat.enrich_message(%Message{
@@ -152,6 +151,23 @@ defmodule ChatWeb.RoomChannel do
         last_message_at: DateTime.utc_now(),
         last_message_user_name: user_name
       })
+    end)
+
+    Task.start(fn ->
+      members = Chat.get_rooms_members(room)
+
+      Enum.each(members, fn member_id ->
+        if member_id != user_id do
+          case Redis.hkeys(member_id) do
+            {:ok, []} -> :ok
+            {:ok, tokens} ->
+              Enum.each(tokens, fn token ->
+                ChatWeb.Push.send_push_notification(token, body)
+              end)
+            _ -> :ok
+          end
+        end
+      end)
     end)
 
     {:noreply, socket}

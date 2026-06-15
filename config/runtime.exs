@@ -12,6 +12,9 @@ if env("PHX_SERVER", :boolean, false) do
   config :chat, ChatWeb.Endpoint, server: true
 end
 
+config :pushx,
+  fcm_project_id: System.get_env("FCM_PROJECT_ID", "shlus-messenger")
+
 config :chat, ChatWeb.Endpoint, http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("PORT", "4000"))]
 
 if config_env() == :prod do

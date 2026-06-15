@@ -30,3 +30,4 @@ chat-*.tar
 .env
 
 .vscode/
+firebase-config.json
